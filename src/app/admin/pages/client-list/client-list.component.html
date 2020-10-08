@@ -1,0 +1,7 @@
+<ion-list>
+  <ion-item *ngFor="let ord of OrdersList$ | async">
+    <ion-label>{{ ord.order }}</ion-label>
+    <ion-label>{{ ord.status }}</ion-label>
+    <ion-label>{{ ord.price | currency: 'UAH':'symbol-narrow' }}</ion-label>
+  </ion-item>
+</ion-list>

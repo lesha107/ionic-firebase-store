@@ -1,0 +1,7 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+  <formly-form [model]="model" [fields]="fields" [options]="options" [form]="form"></formly-form>
+  <div mat-dialog-actions>
+    <button type="button" mat-button (click)="closeDialog()">No Thanks</button>
+    <button mat-button cdkFocusInitial type="submit">Ok</button>
+  </div>
+</form>
