@@ -3,14 +3,14 @@ import { routesTypeDefinition } from 'src/app/utils/types';
 export const ADMIN_ROUTES = routesTypeDefinition({
   CORE: {
     path: '',
-    fullPath: 'admin'
+    fullPath: 'admin',
   },
-  SALLERS: {
-    path: 'sallers',
-    fullPath: 'admin/sallers'
+  SALLER: {
+    path: 'saller',
+    fullPath: 'admin/saller',
   },
-  CLIENTS: {
-    path: 'clients',
-    fullPath: 'admin/clients'
-  }
+  CLIENT: {
+    path: 'client',
+    fullPath: 'admin/client',
+  },
 });

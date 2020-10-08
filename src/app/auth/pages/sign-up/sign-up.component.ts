@@ -6,7 +6,6 @@ import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core';
 import { ADMIN_ROUTES } from 'src/app/admin/routes/admin-routes';
 import { UserService } from 'src/app/admin/services';
 import { AuthService } from 'src/app/auth/services/auth/auth.service';
-import { SignInWithPasswordArgsType, SignInWithPasswordResponseType } from '../../interfaces';
 @UntilDestroy()
 @Component({
   selector: 'app-sign-up',
@@ -94,20 +93,27 @@ export class SignUpComponent {
       if (!this.form.valid) {
         return;
       }
-      const data = await this._authService.createUser(this.form.value);
-      await this._authService.updateUsersData({ data, options: this.form.value });
+
+      const { client, seller, ...user } = this.form.value;
+      const options = {
+        ...user,
+        roles: [client ? 'client' : 'saller'],
+      };
+
+      const data = await this._authService.signUp(options);
+
+      await this._authService.updateUsersData({ data, options });
+
       this._userService
         .getUsers()
         .pipe(untilDestroyed(this))
-        .subscribe(async (users) => {
-          const currentUser: any = users.find((x) => x.id === data.user.uid);
-          const route = currentUser.saller ? ADMIN_ROUTES.SALLERS.fullPath : ADMIN_ROUTES.CLIENTS.fullPath;
-          await this._router.navigateByUrl(route);
+        .subscribe((users) => {
+          const currentUser = users.find((x) => x.uid === data.user.uid);
+          const route = currentUser.roles.includes('saller')
+            ? ADMIN_ROUTES.SALLER.fullPath
+            : ADMIN_ROUTES.CLIENT.fullPath;
+          this._router.navigateByUrl(route);
         });
     } catch (er) {}
-  }
-
-  signInWithPassword(args: SignInWithPasswordArgsType): SignInWithPasswordResponseType {
-    return this._authService.signIn(args);
   }
 }

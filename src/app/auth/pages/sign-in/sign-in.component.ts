@@ -6,7 +6,6 @@ import { FormlyFieldConfig, FormlyFormOptions } from '@ngx-formly/core';
 import { ADMIN_ROUTES } from 'src/app/admin/routes/admin-routes';
 import { UserService } from 'src/app/admin/services';
 import { AuthService } from 'src/app/auth/services/auth/auth.service';
-import { SignInWithPasswordArgsType, SignInWithPasswordResponseType } from '../../interfaces';
 @UntilDestroy()
 @Component({
   selector: 'app-sign-in',
@@ -62,24 +61,25 @@ export class SignInComponent {
     return {};
   }
 
-  async signIn(): Promise<void> {
+  public async signIn(): Promise<void> {
     try {
       if (!this.form.valid) {
         return;
       }
-      const user = await this.signInWithPassword(this.form.value);
+
+      const user = await this._authService.signIn(this.form.value);
+
       this._userService
         .getUsers()
         .pipe(untilDestroyed(this))
-        .subscribe(async (users) => {
-          const currentUser: any = users.find((x) => x.id === user.uid);
-          const route = currentUser.saller ? ADMIN_ROUTES.SALLERS.fullPath : ADMIN_ROUTES.CLIENTS.fullPath;
-          await this._router.navigateByUrl(route);
+        .subscribe((users) => {
+          const currentUser = users.find((x) => x.uid === user.uid);
+          const route = currentUser.roles.includes('saller')
+            ? ADMIN_ROUTES.SALLER.fullPath
+            : ADMIN_ROUTES.CLIENT.fullPath;
+          console.log('navigate to route', route);
+          this._router.navigateByUrl(route);
         });
     } catch (er) {}
-  }
-
-  signInWithPassword(args: SignInWithPasswordArgsType): SignInWithPasswordResponseType {
-    return this._authService.signIn(args);
   }
 }

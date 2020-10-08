@@ -1,5 +1,12 @@
-export const initFirestoreData = (items): [] =>
+export const initFirestoreCollection = (items): [] =>
   items.map(({ payload }) => ({
-    id: payload.doc.id,
+    uid: payload.doc.id,
     ...payload.doc.data(),
   }));
+
+export function initFirestoreDoc(item) {
+  return {
+    uid: item.payload.id,
+    ...item.payload.data(),
+  };
+}

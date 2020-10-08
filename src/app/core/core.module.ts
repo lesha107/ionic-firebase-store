@@ -25,7 +25,6 @@ const CORE_IMPORTS = [
   FormlyIonicModule,
   FormlyModule.forRoot(FORMLY_CONFIGS),
   ToastrModule.forRoot(),
-  ReactiveFormsModule,
 ];
 
 @NgModule({

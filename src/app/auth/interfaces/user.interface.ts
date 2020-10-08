@@ -1,9 +1,8 @@
 export interface UserBase {
   email: string;
   password: string;
-  saller?: string;
-  client?: string;
-  id?: string;
+  roles: ['client' | 'saller'];
+  uid?: string;
 }
 
 export interface OrderOptions {
@@ -19,6 +18,5 @@ export interface SignIn {
 export interface SignUp {
   email: string;
   password: string;
-  saller?: boolean;
-  client?: boolean;
+  roles: ['client' | 'saller'];
 }

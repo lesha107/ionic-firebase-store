@@ -4,43 +4,40 @@ import { AngularFirestore } from '@angular/fire/firestore';
 import {
   SignInResponseType,
   SignInArgsType,
-  CreateUserArgsType,
-  CreateUserResponeType,
+  SignUpArgsType,
+  SignUpResponeType,
   UpdateUserArgsInterface,
 } from '../../interfaces';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
-import { ToastrService } from 'ngx-toastr';
+import { Observable, ReplaySubject, Subject } from 'rxjs';
+import { filter, map, switchMap, tap } from 'rxjs/operators';
+import { initFirestoreDoc } from 'src/app/utils/firebase';
+
 import * as firebase from 'firebase';
-export interface User {
-  uid: string;
-  email: string;
-}
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  public readonly currentUser$: BehaviorSubject<firebase.User>;
-  user$: Observable<any>;
-  constructor(
-    private readonly _afAuth: AngularFireAuth,
-    private readonly _afs: AngularFirestore,
-    private readonly _toastrService: ToastrService
-  ) {
-    this.user$ = this._afAuth.authState.pipe(
-      switchMap((user) => {
-        if (user) {
-          return this._afs.doc(`users/${user.uid}`).valueChanges();
-        } else {
-          return of(null);
-        }
-      })
-    );
-    this.currentUser$ = new BehaviorSubject(null);
+  private readonly _userSubject: ReplaySubject<firebase.User>;
+  private readonly _user$: Observable<firebase.User>;
+
+  constructor(private readonly _afAuth: AngularFireAuth, private readonly _afs: AngularFirestore) {
+    this._userSubject = new ReplaySubject(1);
+    this._user$ = this._userSubject.asObservable();
   }
 
-  public get user(): firebase.User {
-    return this.currentUser$.getValue();
+  get user$() {
+    return this.uid$.pipe(
+      switchMap((uid) => this._afs.collection('users').doc(uid).snapshotChanges()),
+      map(initFirestoreDoc)
+    );
+  }
+
+  private get uid$() {
+    return this._user$.pipe(
+      filter((user) => !!user?.uid),
+      map((user) => user.uid)
+    );
   }
 
   async signIn(args: SignInArgsType): SignInResponseType {
@@ -48,30 +45,29 @@ export class AuthService {
       const { email, password } = args;
       const credential = await this._afAuth.signInWithEmailAndPassword(email, password);
 
-      this.currentUser$.next(credential.user);
+      this._userSubject.next(credential.user);
+
       return credential.user;
     } catch (err) {
       return null;
     }
   }
 
-  async createUser(args: CreateUserArgsType): CreateUserResponeType {
+  async signUp(args: SignUpArgsType): SignUpResponeType {
     try {
       const { email, password } = args;
-      const user = await this._afAuth.createUserWithEmailAndPassword(email, password);
+      const credential = await this._afAuth.createUserWithEmailAndPassword(email, password);
 
-      this._toastrService.success('User Created');
+      this._userSubject.next(credential.user);
 
-      return user;
+      return credential;
     } catch (err) {}
   }
 
   async updateUsersData(args: UpdateUserArgsInterface): Promise<void> {
     try {
       const { data, options } = args;
-      const user = await this._afs.collection('users').doc(data.user.uid).set(options);
-
-      this._toastrService.success('User Updated');
+      await this._afs.collection('users').doc(data.user.uid).set(options);
     } catch (err) {}
   }
 }
