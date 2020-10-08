@@ -12,7 +12,7 @@ const routes: Routes = [
     component: AdminComponent,
     children: [
       {
-        path: ADMIN_ROUTES.SALLERS.path,
+        path: ADMIN_ROUTES.SALLER.path,
         canActivate: [RoleGuard],
         data: {
           expectedRole: 'saller',
@@ -20,7 +20,7 @@ const routes: Routes = [
         component: ClientListComponent,
       },
       {
-        path: ADMIN_ROUTES.CLIENTS.path,
+        path: ADMIN_ROUTES.CLIENT.path,
         canActivate: [RoleGuard],
         data: {
           expectedRole: 'client',
@@ -29,7 +29,7 @@ const routes: Routes = [
       },
       {
         path: ADMIN_ROUTES.CORE.path,
-        redirectTo: ADMIN_ROUTES.CLIENTS.path,
+        redirectTo: ADMIN_ROUTES.CLIENT.path,
       },
     ],
   },

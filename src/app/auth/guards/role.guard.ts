@@ -16,22 +16,11 @@ export class RoleGuard implements CanActivate {
     private readonly _router: Router
   ) {}
   canActivate(route: ActivatedRouteSnapshot): Observable<boolean> {
+    console.log('FUCK YOU BITCH', route.data.expectedRole);
     return this._authService.user$.pipe(
-      take(1),
+      tap((user) => console.log('role guard', user)),
       filter((user) => !!user),
-      map((user) => {
-        const expectedRole = route.data.expectedRole;
-
-        const roles = [];
-        if (user.saller) {
-          roles.push('saller');
-        }
-        if (user.client) {
-          roles.push('client');
-        }
-
-        return roles.includes(expectedRole);
-      }),
+      map((user) => user.roles.includes(route.data.expectedRole)),
       tap((role) => {
         if (!role) {
           this._router.navigateByUrl('auth');
